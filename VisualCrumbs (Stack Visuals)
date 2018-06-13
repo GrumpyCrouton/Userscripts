@@ -1,1 +1,44 @@
+// ==UserScript==
+// @name         VisualCrumbs (Stack Visuals)
+// @namespace    https://github.com/GrumpyCrouton/Userscripts/blob/master/VisualCrumbs%20(Stack%20Visuals)
+// @version      1.0
+// @description  Visual Changes (POST Sidebar)
+// @author       GrumpyCrouton
+// @match        *://*.stackoverflow.com/*
+// @match        *://*.stackexchange.com/*
+// @match        *://*.superuser.com/*
+// ==/UserScript==
 
+document.onreadystatechange = function () {
+    if (document.readyState === "interactive") {
+
+        //body changes
+        $("body").css("background-color","#f4fff3");
+        $(".container").css({"max-width":"none","border-right":"1px solid #d6d9dc"});
+        $("#questions, #qlist-wrapper, #content").css({"max-width":"none","border-right":"1px solid #d6d9dc"});
+
+        controlRightPadding();
+        $( window ).resize(function() {
+           controlRightPadding();
+        });
+
+        //question stats
+        $(".question-stats").addClass("community-bulletin");
+        $("<div class='bulletin-title'>Question Stats</div><hr>").prependTo(".question-stats");
+
+        $("#questions .cbt").remove();
+
+        //nav bar
+        $("#search").css("max-width","none");
+        $(".js-secondary-topbar-links").css("padding-left","0px","important");
+
+    }
+}
+
+function controlRightPadding() {
+    if($('header').width() > 640) {
+        $(".container").css("padding-right", "8.5%");
+    } else {
+        $(".container").css("padding-right", "none");
+    }
+}
