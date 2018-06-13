@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VisualCrumbs (Stack Visuals)
 // @namespace    https://github.com/GrumpyCrouton/Userscripts/blob/master/VisualCrumbs%20(Stack%20Visuals)
-// @version      1.0
+// @version      1.5
 // @description  Visual Changes (POST Sidebar)
 // @author       GrumpyCrouton
 // @match        *://*.stackoverflow.com/*
