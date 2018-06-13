@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name         VisualCrumbs (Stack Visuals)
 // @namespace    https://github.com/GrumpyCrouton/Userscripts/blob/master/VisualCrumbs%20(Stack%20Visuals)
-// @version      1.5
+// @version      1.6
 // @description  Visual Changes (POST Sidebar)
 // @author       GrumpyCrouton
 // @match        *://*.stackoverflow.com/*
 // @match        *://*.stackexchange.com/*
 // @match        *://*.superuser.com/*
+// @run-at        document-start
 // ==/UserScript==
 
 document.onreadystatechange = function () {
