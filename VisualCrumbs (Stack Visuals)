@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VisualCrumbs (Stack Visuals)
 // @namespace    https://github.com/GrumpyCrouton/Userscripts/blob/master/VisualCrumbs%20(Stack%20Visuals)
-// @version      2.2
+// @version      2.3
 // @description  Visual Changes (Now works with new responsive + sidebar & old style)
 // @author       GrumpyCrouton
 // @match        *://*.stackoverflow.com/*
@@ -30,6 +30,8 @@ document.onreadystatechange = function () {
             //body changes
             $('div .mb24').children('p').hide();
             $(".gs12 .list-ls-none").append("<li class=\"grid--cell\"><a onclick=\"$(this).parents('div .mb24').children('p').toggle();\">Toggle Description</a></li>");
+
+            $("div #left-sidebar").children(".nav-links").css({"position":"fixed","width":"164px"});
 
             $(".container").css({"max-width":"none","border-right":"1px solid #d6d9dc"});
             $("#questions, #qlist-wrapper, #content").css({"max-width":"none","border-right":"1px solid #d6d9dc"});
