@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         VisualCrumbs (Stack Visuals)
 // @namespace    https://github.com/GrumpyCrouton/Userscripts/blob/master/VisualCrumbs%20(Stack%20Visuals)
-// @version      2.0
+// @version      2.2
 // @description  Visual Changes (Now works with new responsive + sidebar & old style)
 // @author       GrumpyCrouton
 // @match        *://*.stackoverflow.com/*
 // @match        *://*.stackexchange.com/*
 // @match        *://*.superuser.com/*
-// @run-at        document-start
+// @run-at       document-start
 // ==/UserScript==
 
 document.onreadystatechange = function () {
@@ -28,6 +28,8 @@ document.onreadystatechange = function () {
 
         if ($("#left-sidebar").length > 0) { //SIDE BAR EXISTS (responsive)
             //body changes
+            $('div .mb24').children('p').hide();
+            $(".gs12 .list-ls-none").append("<li class=\"grid--cell\"><a onclick=\"$(this).parents('div .mb24').children('p').toggle();\">Toggle Description</a></li>");
 
             $(".container").css({"max-width":"none","border-right":"1px solid #d6d9dc"});
             $("#questions, #qlist-wrapper, #content").css({"max-width":"none","border-right":"1px solid #d6d9dc"});
