@@ -26,6 +26,6 @@ Nav Bar:
 
 https://greasyfork.org/en/scripts/369480-visualcrumbs-stack-visuals
 
-Screenshot of V2.3
-![Screenshot of V2.3](https://image.ibb.co/hFB3hy/Untitled.png)
+Screenshot of V2.6
+![Screenshot of V2.3](https://i.stack.imgur.com/FOtf0.png)
 
