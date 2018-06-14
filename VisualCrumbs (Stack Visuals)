@@ -1,20 +1,24 @@
 // ==UserScript==
 // @name         VisualCrumbs (Stack Visuals)
 // @namespace    https://github.com/GrumpyCrouton/Userscripts/blob/master/VisualCrumbs%20(Stack%20Visuals)
-// @version      2.0
+// @version      2.6
 // @description  Visual Changes (Now works with new responsive + sidebar & old style)
 // @author       GrumpyCrouton
 // @match        *://*.stackoverflow.com/*
 // @match        *://*.stackexchange.com/*
 // @match        *://*.superuser.com/*
-// @run-at        document-start
+// @grant        GM_setValue
+// @grant        GM_getValue
+// @run-at       document-start
 // ==/UserScript==
-
-document.onreadystatechange = function () {
+document.onreadystatechange = function() {
     if (document.readyState === "interactive") {
 
+        var sidebar = $('#sidebar');
+        var content = $('#mainbar');
+
         //global changes (Whether there is a sidebar or not)
-        $("body").css("background-color","#f4fff3");
+        $("body").css("background-color", "#f4fff3");
 
         //question stats
         $(".question-stats").addClass("community-bulletin");
@@ -23,39 +27,115 @@ document.onreadystatechange = function () {
         $("#questions .cbt").remove();
 
         //nav bar
-        $("#search").css("max-width","none");
-        $(".js-secondary-topbar-links").css("padding-left","0px","important");
+        $("#search").css("max-width", "none");
+        $(".js-secondary-topbar-links").css("padding-left", "0px", "important");
 
         if ($("#left-sidebar").length > 0) { //SIDE BAR EXISTS (responsive)
             //body changes
 
-            $(".container").css({"max-width":"none","border-right":"1px solid #d6d9dc"});
-            $("#questions, #qlist-wrapper, #content").css({"max-width":"none","border-right":"1px solid #d6d9dc"});
+            //add space in left sidebar for options specific to visualcrumbs
+            $('nav[role="navigation"] ol:first').append(' \
+            <li> \
+                <ol class="nav-links"> \
+                    <li class="fs-fine tt-uppercase ml8 mt24 mb4 fc-light"> \
+                        VisualCrumbs \
+                    </li> \
+                    <li> \
+                        <a class="pl8 js-gps-track nav-links--link -link__with-icon"> \
+                            <span id="visualcrumbs_hideRightBar" class="-link--channel-name">Toggle Right Sidebar</span> \
+                        </a> \
+                    </li> \
+                </ol> \
+            </li>');
 
+            $('div .mb24').children('p').hide();
+            $(".gs12 .list-ls-none").append("<li class=\"grid--cell\"><a onclick=\"$(this).parents('div .mb24').children('p').toggle();\">Toggle Description</a></li>");
+
+            //console.log($('.fl1.fs-headline1').html().replace(/questions tagged/g, "questions with tags:<br>"));
+
+            var tagelement = $('.fl1.fs-headline1');
+            var newhtml = tagelement.html().replace(/questions tagged/g, "questions with tags:</div><div style='font-size:12px;line-height:none !important;'>").replace(/ or /g, "], [");
+            tagelement.html(newhtml).contents().filter(function() {
+                return this.nodeType === 3;
+            }).wrapAll("<div style='margin-bottom:0px;'>");
+
+            $("#left-sidebar").children("nav").children(".nav-links").css({
+                "position": "fixed",
+                "width": "164px",
+                "padding-left": "10px"
+            });
+            $(".youarehere").children("a").css({
+                "border-right": "none",
+                "border-left": "3px solid #F48024"
+            });
+
+            $(".container").css({
+                "max-width": "none",
+                "border-right": "1px solid #d6d9dc"
+            });
+            $("#questions, #qlist-wrapper, #content").css({
+                "max-width": "none",
+                "border-right": "1px solid #d6d9dc"
+            });
+
+            manageRightBarOnLoad();
             controlRightPadding();
-            $( window ).resize(function() {
+            $(window).resize(function() {
                 controlRightPadding();
             });
 
         } else { //SIDEBAR DOES NOT EXIST (unresponsive)
 
             //body changes
-            $("#content").css({"width":"auto","border-right":"1px solid #d6d9dc","border-left":"1px solid #d6d9dc","margin-left":"8.5%","margin-right":"8.5%"});
-            $("#mainbar").css("width", "80%");
+            $("#content").css({
+                "width": "auto",
+                "border-right": "1px solid #d6d9dc",
+                "border-left": "1px solid #d6d9dc",
+                "margin-left": "8.5%",
+                "margin-right": "8.5%"
+            });
+            content.css("width", "80%");
             $("#question").css("padding-right", "24px");
-            $("#answers").css({"padding-right":"24px","width":"auto"});
+            $("#answers").css({
+                "padding-right": "24px",
+                "width": "auto"
+            });
             $("#answers-header").css("width", "auto");
             $("#post-editor").css("width", "auto");
-            $("#sidebar").css("width", "20%");
+            sidebar.css("width", "20%");
 
         }
-    }
-}
 
-function controlRightPadding() {
-    if($('header').width() > 640) {
-        $(".container").css("padding-right", "8.5%");
-    } else {
-        $(".container").css("padding-right", "none");
+        $("#visualcrumbs_hideRightBar").click(handleRightBarCollapse);
+
+        function handleRightBarCollapse() {
+
+            if (sidebar.is(":visible")) {
+                GM_setValue("hideRightBar", true);
+                content.css("width", "100%");
+                sidebar.hide();
+            } else {
+                GM_setValue("hideRightBar", false);
+                content.css("width", "");
+                sidebar.show();
+            }
+        }
+
+        function manageRightBarOnLoad() {
+            var result = GM_getValue("hideRightBar", false);
+            if (result) {
+                content.css("width", "100%");
+                sidebar.hide();
+            }
+        }
+
+        function controlRightPadding() {
+            if ($('header').width() > 640) {
+                $(".container").css("padding-right", "8.5%");
+            } else {
+                $(".container").css("padding-right", "none");
+            }
+        }
+
     }
 }
