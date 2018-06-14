@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         VisualCrumbs (Stack Visuals)
 // @namespace    https://github.com/GrumpyCrouton/Userscripts/blob/master/VisualCrumbs%20(Stack%20Visuals)
-// @version      1.6
-// @description  Visual Changes (POST Sidebar)
+// @version      2.0
+// @description  Visual Changes (Now works with new responsive + sidebar & old style)
 // @author       GrumpyCrouton
 // @match        *://*.stackoverflow.com/*
 // @match        *://*.stackexchange.com/*
@@ -13,15 +13,8 @@
 document.onreadystatechange = function () {
     if (document.readyState === "interactive") {
 
-        //body changes
+        //global changes (Whether there is a sidebar or not)
         $("body").css("background-color","#f4fff3");
-        $(".container").css({"max-width":"none","border-right":"1px solid #d6d9dc"});
-        $("#questions, #qlist-wrapper, #content").css({"max-width":"none","border-right":"1px solid #d6d9dc"});
-
-        controlRightPadding();
-        $( window ).resize(function() {
-           controlRightPadding();
-        });
 
         //question stats
         $(".question-stats").addClass("community-bulletin");
@@ -33,6 +26,29 @@ document.onreadystatechange = function () {
         $("#search").css("max-width","none");
         $(".js-secondary-topbar-links").css("padding-left","0px","important");
 
+        if ($("#left-sidebar").length > 0) { //SIDE BAR EXISTS (responsive)
+            //body changes
+
+            $(".container").css({"max-width":"none","border-right":"1px solid #d6d9dc"});
+            $("#questions, #qlist-wrapper, #content").css({"max-width":"none","border-right":"1px solid #d6d9dc"});
+
+            controlRightPadding();
+            $( window ).resize(function() {
+                controlRightPadding();
+            });
+
+        } else { //SIDEBAR DOES NOT EXIST (unresponsive)
+
+            //body changes
+            $("#content").css({"width":"auto","border-right":"1px solid #d6d9dc","border-left":"1px solid #d6d9dc","margin-left":"8.5%","margin-right":"8.5%"});
+            $("#mainbar").css("width", "80%");
+            $("#question").css("padding-right", "24px");
+            $("#answers").css({"padding-right":"24px","width":"auto"});
+            $("#answers-header").css("width", "auto");
+            $("#post-editor").css("width", "auto");
+            $("#sidebar").css("width", "20%");
+
+        }
     }
 }
 
