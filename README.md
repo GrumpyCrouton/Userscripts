@@ -20,3 +20,7 @@ Nav Bar:
 - Makes width of search bar take up all the space possible, added this due to a meta post I saw a while back that was complaining about this.
 
 https://greasyfork.org/en/scripts/369480-visualcrumbs-stack-visuals
+
+Screenshot of V2.3
+![Screenshot of V2.3](https://image.ibb.co/hFB3hy/Untitled.png)
+
