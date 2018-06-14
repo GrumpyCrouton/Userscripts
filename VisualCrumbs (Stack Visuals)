@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VisualCrumbs (Stack Visuals)
 // @namespace    https://github.com/GrumpyCrouton/Userscripts/blob/master/VisualCrumbs%20(Stack%20Visuals)
-// @version      2.4
+// @version      2.5
 // @description  Visual Changes (Now works with new responsive + sidebar & old style)
 // @author       GrumpyCrouton
 // @match        *://*.stackoverflow.com/*
@@ -30,6 +30,14 @@ document.onreadystatechange = function () {
             //body changes
             $('div .mb24').children('p').hide();
             $(".gs12 .list-ls-none").append("<li class=\"grid--cell\"><a onclick=\"$(this).parents('div .mb24').children('p').toggle();\">Toggle Description</a></li>");
+
+            //console.log($('.fl1.fs-headline1').html().replace(/questions tagged/g, "questions with tags:<br>"));
+
+            var tagelement = $('.fl1.fs-headline1');
+            var newhtml = tagelement.html().replace(/questions tagged/g, "questions with tags:</div><div style='font-size:12px;line-height:none !important;'>").replace(/ or /g, "], [");
+            tagelement.html(newhtml).contents().filter(function(){
+                return this.nodeType === 3;
+            }).wrapAll("<div style='margin-bottom:0px;'>");
 
             $("#left-sidebar").children("nav").children(".nav-links").css({"position":"fixed","width":"164px","padding-left":"10px"});
             $(".youarehere").children("a").css({"border-right":"none","border-left":"3px solid #F48024"});
