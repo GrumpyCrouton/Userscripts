@@ -31,7 +31,7 @@ document.onreadystatechange = function () {
             $('div .mb24').children('p').hide();
             $(".gs12 .list-ls-none").append("<li class=\"grid--cell\"><a onclick=\"$(this).parents('div .mb24').children('p').toggle();\">Toggle Description</a></li>");
 
-            console.log($("#left-sidebar").children("nav").children(".nav-links").css({"position":"fixed","width":"164px"}));
+            $("#left-sidebar").children("nav").children(".nav-links").css({"position":"fixed","width":"164px"});
 
             $(".container").css({"max-width":"none","border-right":"1px solid #d6d9dc"});
             $("#questions, #qlist-wrapper, #content").css({"max-width":"none","border-right":"1px solid #d6d9dc"});
