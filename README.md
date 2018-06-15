@@ -29,3 +29,6 @@ https://greasyfork.org/en/scripts/369480-visualcrumbs-stack-visuals
 Screenshot of V2.6
 ![Screenshot of V2.3](https://i.stack.imgur.com/FOtf0.png)
 
+## Right Sidebar Toggler
+
+For people not interested in all the features of VisualCrumbs, this is a script that just gives you the ability to toggle the right sidebar the same way VisualCrumbs does.
