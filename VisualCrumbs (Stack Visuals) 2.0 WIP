@@ -21,6 +21,7 @@
     header_search.css({
         'max-width': 'none'
     });
+    $('header ol.-secondary').css('padding-left', '0px');
 
     main_container.append('<div id="visualcrumbs-sidebar" class="left-sidebar"></div>').css({
         'max-width': 'none',
@@ -35,7 +36,7 @@
     /***** LOGOUT BUTTON IN MENU *****/
     var logout_button = '\
          <li class="-item">\
-	         <a href="https://stackoverflow.com/users/logout" class="-link js-site-switcher-button js-gps-track" title="Logout">\
+	         <a href="https://stackoverflow.com/users/logout" class="-link" title="Logout">\
 		         <svg aria-hidden="true" class="svg-icon iconStackExchange" width="18" height="18" viewBox="0 0 21 21"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"></path></svg>\
 	         </a>\
          </li>\
@@ -58,6 +59,26 @@
     /***** HIDE ADS *****/
     main_content.find('div#dfp-tsb').remove();
 
+    /***** MAINBAR *****/
+    var filterbuttons = $('div.grid.tabs-filter.s-btn-group.tt-capitalize');
+    var headline = $('h1.grid--cell.fl1.fs-headline1,h1.grid--cell.fl1.fs-headline1.mb24');
+    $('div.pl8.aside-cta.grid--cell').before(filterbuttons);
+    headline.removeClass('mb24').css("margin-bottom", "0px");
+
+    var questions = $('div.grid--cell.fl1.fs-body3');
+    var questionCount = questions.length == 1 ? questions.html().trim().split(" ")[0] : "";
+    headline.html(headline.html() + " <span style='font-size:14px'>" + questionCount + "</span>");
+    questions.remove();
+    $('div#mainbar div[class="mb24"]').remove();
+
+    filterbuttons.children('a').css("line-height", "20px");
+    $('#question-mini-list').css({
+        'border-right': '1px solid #d6d9dc',
+        'border-bottom': '1px solid #d6d9dc'
+    });
+
+
+    /***** RIGHT SIDEBAR *****/
     $(function() {
 
         var widget_array = {
