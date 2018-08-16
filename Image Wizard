@@ -1,184 +1,173 @@
 // ==UserScript==
-// @name         Image Wizard
+// @name         Image Proxier
 // @namespace    https://github.com/GrumpyCrouton/Userscripts
-// @version      1.5
-// @description  Does some magic with images.
+// @version      1.0
+// @description  Replaces images from certain websites with a proxied version.
 // @author       GrumpyCrouton
-// @match        *://*.stackoverflow.com/*
-// @match        *://*.stackexchange.com/*
-// @match        *://*.superuser.com/*
-// @require  https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
-// @require https://greasyfork.org/scripts/48306-waitforkeyelements/code/waitForKeyElements.js?version=275769
-// @grant        GM.xmlHttpRequest
-// @grant    GM_addStyle
-// @grant    GM.getValue
+// @match        *://*/*
+// @grant        none
 // ==/UserScript==
-var proxy = "http://service.bypass123.com/index.php";
-var replaceFrom = ["imgur.com", "facebook.com"];
-
-var processEvery = 0;
-//proces every x seconds (Useful until I can figure out how to detect when a new image or link is added to DOM. Set to 0 to disable.
-//There is an automated way built into the script, processEvery is deprecated since v1.5 but can still be used if the automated method is not working for you.
-
-/* DEBUG */
-var debugImg = false;
-var debugA = false;
-var debug = false;
-
-var supportedExtensions = ["png", "jpg", "gif"];
-
 (function() {
+    'use strict';
 
-    process();
+    var replace_from = [
+        'stack.imgur.com',
+        'i.stack.imgur.com',
+        'graph.facebook.com',
+    ];
 
-    function handleImgTag() {
+    var proxy_link = "//grumpycrouton.com/other/image_proxy/?url=";
+
+    var $ = window.jQuery;
+
+    $(function() {
+        //runProxier();
+    });
+
+    function runProxier() {
         $('img').each(function() {
-            url = $(this).prop('src').split('?').shift();
-			extension = url.split('.').pop();
-            if (replaceFrom.some(function(v) {
-                    return url.indexOf(v) >= 0;
-                }) && supportedExtensions.some(function(v) {
-                    return url.indexOf(v) >= 0;
-                })) {
-                if (!$(this).attr('processed')) {
-                    $(this).attr('processed', true);
-                    replaceImg(url, $(this));
-                }
-                return true;
+            var image = $(this);
+            if(!image.data('image_proxier_converted')) {
+                image.attr('src', getProxyLink(image.attr('src')));
+                image.attr('data-image_proxier_converted', 1);
             }
-            if (debugImg) console.log("No URL match in <img>: " + url);
         });
-    }
-
-    function handleATag() {
         $('a').each(function() {
-            url = $(this).prop('href').split('?').shift();
-			extension = url.split('.').pop();
-            if (replaceFrom.some(function(v) {
-                    return url.indexOf(v) >= 0;
-                }) && supportedExtensions.some(function(v) {
-                    return url.indexOf(v) >= 0;
+            var link = $(this);
+            if(!link.data('image_proxier_converted')) {
+                link.attr('href', getProxyLink(link.attr('href')));
+                link.attr('data-image_proxier_converted', 1);
+            }
+        });
+    }
+
+    function getProxyLink(givenLink) {
+        if (givenLink) {
+            if (replace_from.some(function(v) {
+                    return givenLink.indexOf(v) >= 0;
                 })) {
-                if ($(this).has('img').length < 1) {
-                    replaceA(url, $(this));
-                    return true;
-                }
+                var new_link = proxy_link + encodeURIComponent(givenLink);
+                console.log(new_link);
+                return new_link;
+            } else {
+                return givenLink;
             }
-            if (debugA) console.log("No URL match in <a>: " + url);
-        });
+        }
     }
 
-    function replaceImg(src, element) {
-        GM.xmlHttpRequest({
-            method: "POST",
-            url: proxy,
-            data: "url=" + src,
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            onload: function(response) {
-                element.prop('src', response.finalUrl);
-                element.prop('alt', "Image replaced by Image Wizard");
+    (function(window) {
+        var last = +new Date();
+        var delay = 100; // default delay
 
-                parent_link = element.parent("a");
-                if (parent_link.length) {
-                    if (parent_link.prop('href') == src) {
-                        parent_link.prop('href', response.finalUrl);
-                        parent_link.prop('target', "_blank");
+        // Manage event queue
+        var stack = [];
+
+        function callback() {
+            var now = +new Date();
+            if (now - last > delay) {
+                for (var i = 0; i < stack.length; i++) {
+                    stack[i]();
+                }
+                last = now;
+            }
+        }
+
+        // Public interface
+        var onDomChange = function(fn, newdelay) {
+            if (newdelay) delay = newdelay;
+            stack.push(fn);
+        };
+
+        // Naive approach for compatibility
+        function naive() {
+
+            var last = document.getElementsByTagName('*');
+            var lastlen = last.length;
+            var timer = setTimeout(function check() {
+
+                // get current state of the document
+                var current = document.getElementsByTagName('*');
+                var len = current.length;
+
+                // if the length is different
+                // it's fairly obvious
+                if (len != lastlen) {
+                    // just make sure the loop finishes early
+                    last = [];
+                }
+
+                // go check every element in order
+                for (var i = 0; i < len; i++) {
+                    if (current[i] !== last[i]) {
+                        callback();
+                        last = current;
+                        lastlen = len;
+                        break;
                     }
-                } else {
-                    element.wrap("<a href='" + response.finalUrl + "' target='_blank'></a>");
                 }
-                element = element.parent();
 
-                if (element.parents('.post-text').length) {
-                    wrapContentElement(element);
-                } else {
-                    wrapDefaultElement(element);
-                }
+                // over, and over, and over again
+                setTimeout(check, delay);
+
+            }, delay);
+        }
+
+        //
+        //  Check for mutation events support
+        //
+
+        var support = {};
+
+        var el = document.documentElement;
+        var remain = 3;
+
+        // callback for the tests
+        function decide() {
+            if (support.DOMNodeInserted) {
+                window.addEventListener("DOMContentLoaded", function() {
+                    if (support.DOMSubtreeModified) { // for FF 3+, Chrome
+                        el.addEventListener('DOMSubtreeModified', callback, false);
+                    } else { // for FF 2, Safari, Opera 9.6+
+                        el.addEventListener('DOMNodeInserted', callback, false);
+                        el.addEventListener('DOMNodeRemoved', callback, false);
+                    }
+                }, false);
+            } else if (document.onpropertychange) { // for IE 5.5+
+                document.onpropertychange = callback;
+            } else { // fallback
+                naive();
             }
-        });
-    }
+        }
 
-    function replaceA(src, element, addImg = true) {
-        GM.xmlHttpRequest({
-            method: "POST",
-            url: proxy,
-            data: "url=" + src,
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            onload: function(response) {
-                if (element.parents('.post-text').length) {
-                    element.text("");
-                    element.append("<img src='" + response.finalUrl + "'></img>");
-                    wrapContentElement(element);
-                } else {
-                    element.text("[Image Wizard");
-                    element.wrap("<span></span>").parent('span').append("<a href='https://github.com/GrumpyCrouton/Userscripts/blob/master/Image%20Wizard'>]</a>");
-                }
-                element.prop('href', response.finalUrl).prop('target', "_blank");
-            }
-        });
-    }
+        // checks a particular event
+        function test(event) {
+            el.addEventListener(event, function fn() {
+                support[event] = true;
+                el.removeEventListener(event, fn, false);
+                if (--remain === 0) decide();
+            }, false);
+        }
 
-    function wrapContentElement(element) {
-        element.wrap("<div class='module community-bulletin image-proxier'></div>");
-        element = element.parent(".image-proxier");
-        element.prepend("\
-			<div class='bulletin-title'>\
-				<center>\
-					<a \
-					style='text-decoration:none;' \
-					href='https://github.com/GrumpyCrouton/Userscripts/blob/master/Image%20Wizard'>\
-						Image Wizard\
-					</a>\
-				</center>\
-			</div>\
-			<hr>");
-    }
+        // attach test events
+        if (window.addEventListener) {
+            test('DOMSubtreeModified');
+            test('DOMNodeInserted');
+            test('DOMNodeRemoved');
+        } else {
+            decide();
+        }
 
-    function wrapDefaultElement(element) {
-        element.wrap("<span></span>");
-    }
+        // do the dummy test
+        var dummy = document.createElement("div");
+        el.appendChild(dummy);
+        el.removeChild(dummy);
 
-	function process() {
-		if(debug) console.log("Processing page.");
-		handleImgTag();
-		handleATag();
-	}
+        // expose
+        window.onDomChange = onDomChange;
+    })(window);
 
-    $('img').on('load', function() {
-        handleImgTag();
+    onDomChange(function() {
+        runProxier();
     });
-
-    $('a').on('load', function() {
-        handleATag();
-    });
-
-	if(processEvery) {
-		setInterval (process, processEvery * 1000);
-	}
-
-    waitForKeyElements ("img", loadHandling);
-
-    function loadHandling (jNode) {
-        if (jNode[0].complete) {
-            handlePostLoadedImg (jNode);
-        }
-        else {
-            jNode.on ('load', handlePostLoadedImg);
-        }
-    }
-    function handlePostLoadedImg (jNodeOrEvent) {
-        var newImg;  //  will be jQuery node
-        if (jNodeOrEvent instanceof jQuery) {
-            newImg = jNodeOrEvent;
-        }
-        else {
-            newImg = $(jNodeOrEvent.target);
-        }
-        handleImgTag();
-    }
 
 })();
