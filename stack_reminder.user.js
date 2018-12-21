@@ -2,6 +2,7 @@
 // @name         Stack Reminder
 // @namespace    https://github.com/GrumpyCrouton/Userscripts
 // @version      1.0
+// @update       https://github.com/GrumpyCrouton/Userscripts/raw/master/stack_reminder.user.js
 // @description  Allows you to manage reminders about specific posts accross Stack Exchange
 // @author       GrumpyCrouton
 // @match        *://*.stackexchange.com/*
@@ -11,10 +12,10 @@
 // @match        *://*.askubuntu.com/*
 // @match        *://*.stackapps.com/*
 // @match        *://*.mathoverflow.net/*
-// @require http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
-// @grant   GM_getValue
-// @grant   GM_setValue
-// @grant   GM_addStyle
+// @require      http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
+// @grant        GM_getValue
+// @grant        GM_setValue
+// @grant        GM_addStyle
 // ==/UserScript==
 
 (function() {
