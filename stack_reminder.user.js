@@ -157,7 +157,7 @@
         .gc_remind_popup-content {\
           background: #fff;\
           position: relative;\
-          z-index: 20;\
+          z-index: 99999;\
         }\
         #gc_remind_popup .overlay {\
           background-color: #000;\
@@ -167,7 +167,7 @@
           position: fixed;\
           top: 0;\
           width: 100%;\
-          z-index: 10\
+          z-index: 99998\
         }\
     ");
 })();
