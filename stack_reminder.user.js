@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Stack Reminder
 // @namespace    https://github.com/GrumpyCrouton/Userscripts
-// @version      2.0
+// @version      2.1
 // @update       https://github.com/GrumpyCrouton/Userscripts/raw/master/stack_reminder.user.js
 // @description  Allows you to manage reminders about specific posts across Stack Exchange
 // @author       GrumpyCrouton
@@ -69,22 +69,26 @@
             $(this).parent().append(create_action_link(this.id, this.href, marked));
         });
 
-        $('#gc_remind_popup_button').text('Reminders (' + posts.length + ')');
+        $('#gc_reminders_button').text('Reminders (' + posts.length + ')');
 
         var box = $('#gc_remind_popup_data');
         box.empty();
         $.each(posts, function( index, value ) {
             var row = '\
-                    <div style="padding: 10px; width: 100%;border: 1px solid black; margin-bottom: 10px;" class="site-link js-gps-track grid gs8 gsx">\
+                    <div class="gc_content_entry">\
                         <span class="grid--cell fl1">\
                             <span style="font-size: 14px;"><a style="color: #18529A;" href="' + value.href + '">' + value.title + '</a></span><br>\
-                            <span  style="font-size: 12px;color: #6a737c">Note: ' + (value.note == null ? 'No Note Added' : value.note) + '</span>\
+                            <span class="gc_note_span" style="font-size: 12px;color: #6a737c">Note: ' + (value.note == null ? 'No Note Added' : value.note) + '</span>\
                         </span>\
-                        <a class="gc_stack_remind" data-marked="true" onclick="$(this).parent().remove();" data-link="' + value.link + '" style="float: right;">Remove</a>\
+                        <a class="gc_stack_remind" data-marked="true" onclick="$(this).parent().css(\'background-color\', \'#ffa9a9\').stop().hide(\'fade\', 2000);" data-link="' + value.link + '" style="float: right;">Remove Entry</a>\
                     </div>\
             ';
             box.append(row);
         });
+
+        if($('.gc_content_entry').length == 0) {
+            box.html('<center><span style="font-size: 30px;">No posts have been saved yet.</span></center>');
+        }
     }
 
     $(document).on('click', 'a.gc_stack_remind', function() {
@@ -126,6 +130,33 @@
         );
     });
 
+    $(document).on('click', '#gc_reminders_button', function() {
+        $("#gc_modal_wrapper").show();
+        $('body').css('overflow', 'hidden');
+    });
+
+    $(document).on('click', '#gc_modal_close', function() {
+        $('#gc_modal_wrapper').hide();
+        $('body').css('overflow', 'auto');
+    });
+
+    $(document).on('click', '#gc_modal_wrapper', function(e) {
+        if(e.target == this) {
+            $('#gc_modal_wrapper').hide();
+            $('body').css('overflow', 'auto');
+        }
+    });
+
+    $(document).on('keyup', '#gc_modal_search', function() {
+        $(".gc_content_entry").each(function( index ) {
+            if($(this).text().toLowerCase().match($('#gc_modal_search').val().toLowerCase())) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    });
+
     function create_action_link(link, href, marked) {
 
         var color = 'red';
@@ -144,23 +175,22 @@
         }
 
         //attach custom DOM elements
-        $("div#left-sidebar").find('ol.nav-links').eq(1).append('<li><a href="#gc_remind_popup" id="gc_remind_popup_button" class="pl8 js-gps-track nav-links--link"></a></li>');
+        $("div#left-sidebar").find('ol.nav-links').eq(1).append('<li><a id="gc_reminders_button" class="pl8 js-gps-track nav-links--link"></a></li>');
 
-        $("body").append ('\
-            <div id="gc_remind_popup">\
-                <div class="gc_remind_popup-content">\
-                    <div class="header">\
-                        <div class="popup-close"><a href="#" title="close this popup (or hit Esc)">×</a></div>\
-                        <h2>\
-                            Stack Reminder\
-                        </h2>\
+        $("body").append('\
+            <div id="gc_modal_wrapper">\
+                <div id="gc_modal_window">\
+                    <div id="gc_modal_header">\
+                        <div class="popup-close" id="gc_modal_close"><a title="close this popup (or hit Esc)">×</a></div>\
+                        <h2>Stack Reminder</h2>\
                     </div>\
-                    <div class="copy">\
-                        <button id="gc_purge_reminders" style="margin-bottom: 10px;">Purge Reminders</button>\
-                        <div id="gc_remind_popup_data"></div>\
+                    <div id="gc_modal_content">\
+                         <div id="gc_remind_popup_data"></div>\
                     </div>\
-                 </div>\
-                 <div class="overlay"></div>\
+                    <div id="gc_modal_footer">\
+                        <input type="text" id="gc_modal_search" placeholder="Search Notes..." style="margin-right:5px;"/><button style="margin-bottom: 3px;" id="gc_purge_reminders">Purge Reminders</button>\
+                    </div>\
+                </div>\
             </div>\
         ');
 
@@ -183,49 +213,44 @@
     }
 
     GM_addStyle ("\
-        #gc_remind_popup {\
-          left: 50%;\
-          margin: -250px 0 0 -32%;\
-          opacity: 0;\
-          position: absolute;\
-          top: -50%;\
-          visibility: hidden;\
-          width: 50%;\
-          box-shadow: 0 2px 4px rgba(36,39,41,0.3);\
-          box-sizing: border-box;\
-          transition: all .4s ease-in-out;\
-          -moz-transition: all .4s ease-in-out;\
-          -webkit-transition: all .4s ease-in-out\
-          border: 1px solid #9fa6ad;\
+        #gc_modal_wrapper {\
+            display: none;\
+            position: fixed;\
+            background: rgba(0,0,0,0.8);\
+            width:100%;\
+            height:100%;\
+            z-index: 99000;\
         }\
-        #gc_remind_popup:target {\
-          opacity: 1;\
-          top: 50%;\
-          visibility: visible\
+        #gc_modal_window {\
+            position: fixed;\
+            box-shadow: 0 2px 4px rgba(36,39,41,0.3);\
+            border: 1px solid #9fa6ad;\
+            background-color: #fafafb;\
+            padding: 16px;\
+            min-width:60%;\
+            max-width:90%;\
+            height:80%;\
+            z-index: 99999;\
+            left: 50%;\
+            top: 50%;\
+            transform: translate(-50%, -50%);\
         }\
-        #gc_remind_popup .copy, #gc_remind_popup .header, #gc_remind_popup .footer {\
-          padding: 20px;\
+        #gc_modal_header, #gc_modal_footer {\
+            height: 5%;\
         }\
-        #gc_remind_popup .header {\
-            padding-bottom: 0px;\
+        #gc_modal_content {\
+            overflow: auto;\
+            height:90%;\
+            width:100%;\
+            margin-bottom:5px;\
+            padding: 10px;\
+            border: 1px solid gray;\
         }\
-        #gc_remind_popup .copy {\
-            padding-top: 0px;\
-        }\
-        .gc_remind_popup-content {\
-          background: #fff;\
-          position: relative;\
-          z-index: 99999;\
-        }\
-        #gc_remind_popup .overlay {\
-          background-color: #000;\
-          background: rgba(0,0,0,.6);\
-          height: 100%;\
-          left: 0;\
-          position: fixed;\
-          top: 0;\
-          width: 100%;\
-          z-index: 99998\
+        .gc_content_entry {\
+            margin: 5px;\
+            padding-bottom: 10px;\
+            margin-bottom: 10px;\
+            border-bottom: 1px solid gray;\
         }\
     ");
 
