@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Stack Reminder
+// @name         Stack Reminder (No API)
 // @namespace    https://github.com/GrumpyCrouton/Userscripts
 // @version      1.0
-// @update       https://github.com/GrumpyCrouton/Userscripts/raw/master/stack_reminder.user.js
+// @update       https://github.com/GrumpyCrouton/Userscripts/raw/master/stack_reminder-no_api.user.js
 // @description  Allows you to manage reminders about specific posts accross Stack Exchange
 // @author       GrumpyCrouton
 // @match        *://*.stackexchange.com/*
