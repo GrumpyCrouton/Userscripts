@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Stack Reminder
 // @namespace    https://github.com/GrumpyCrouton/Userscripts
-// @version      2.1
+// @version      2.2
 // @update       https://github.com/GrumpyCrouton/Userscripts/raw/master/stack_reminder.user.js
 // @description  Allows you to manage reminders about specific posts across Stack Exchange
 // @author       GrumpyCrouton
@@ -74,21 +74,29 @@
         var box = $('#gc_remind_popup_data');
         box.empty();
         $.each(posts, function( index, value ) {
-            var row = '\
-                    <div class="gc_content_entry">\
-                        <span class="grid--cell fl1">\
-                            <span style="font-size: 14px;"><a style="color: #18529A;" href="' + value.href + '">' + value.title + '</a></span><br>\
-                            <span class="gc_note_span" style="font-size: 12px;color: #6a737c">Note: ' + (value.note == null ? 'No Note Added' : value.note) + '</span>\
-                        </span>\
-                        <a class="gc_stack_remind" data-marked="true" onclick="$(this).parent().css(\'background-color\', \'#ffa9a9\').stop().hide(\'fade\', 2000);" data-link="' + value.link + '" style="float: right;">Remove Entry</a>\
+
+            var site_icon = value.site ? '<img style="width: 32px" src="https://cdn.sstatic.net/Sites/' + value.site + '/img/apple-touch-icon.png?v=+ value.fav_tag +"><span class="gc_site_icon" style="display: none">' + value.site + '</span></img>' : '<span class="gc_site_icon">' + value.site + '</span>';
+
+            var row= '\
+                <div class="grid gc_content_entry">\
+                    <div class="grid--cell">' + site_icon + '</div>\
+                    <div class="grid--cell fl1">\
+                        <span style="font-size: 14px;"><a style="color: #18529A;" href="' + value.href + '">' + value.title + '</a></span><br>\
+                        <span class="gc_note_span" style="font-size: 12px;color: #6a737c">Note: ' + (value.note == null ? 'No Note Added' : value.note) + '</span>\
                     </div>\
+                    <div class="grid--cell">\
+                         <a class="gc_stack_remind" data-marked="true" onclick="$(this).parent().css(\'background-color\', \'#ffa9a9\').stop().hide(\'fade\', 2000);" data-link="' + value.link + '" style="float: right;">X</a>\
+                    </div>\
+                </div>\
             ';
+
             box.append(row);
         });
 
         if($('.gc_content_entry').length == 0) {
             box.html('<center><span style="font-size: 30px;">No posts have been saved yet.</span></center>');
         }
+
     }
 
     $(document).on('click', 'a.gc_stack_remind', function() {
@@ -113,21 +121,25 @@
             var note = prompt("Type a short note about this post", "");
             if(note == null || note == "") note = "No Note Added";
 
-            console.log('post marked', link);
+            var site_image_link = $('[rel="apple-touch-icon image_src"]')[0].href.split('?v=');
+            var site_name = site_image_link[0].split('Sites/')[1].split('/img')[0];
+            var site_tag = site_image_link[1];
 
             post_request(
                 "mark_post",
-                "api_key=" + api_key + "&title=" + title + "&link=" + link + "&note=" + note + "&href=" + href,
+                "api_key=" + api_key + "&title=" + title + "&link=" + link + "&note=" + note + "&href=" + href + "&site_name=" + site_name + "&site_tag=" + site_tag,
             );
         }
 
     });
 
     $(document).on('click', '#gc_purge_reminders', function() {
-        post_request(
-            "purge_posts",
-            "api_key=" + api_key,
-        );
+        if (confirm('Are you sure you want to purge your reminders?')) {
+            post_request(
+                "purge_posts",
+                "api_key=" + api_key,
+            );
+        }
     });
 
     $(document).on('click', '#gc_reminders_button', function() {
@@ -155,7 +167,31 @@
                 $(this).hide();
             }
         });
+        show_only_site($('#gc_modal_site').val(), false);
     });
+
+    $(document).on('change', '#gc_modal_site', function() {
+        show_only_site($(this).val());
+    });
+
+    function show_only_site(search, show_hidden = true) {
+        if(search == "") return;
+
+        if(search == "all") {
+            $(".gc_site_icon").parent().parent().show();
+            return;
+        }
+
+        $(".gc_site_icon").each(function(index) {
+            if($(this).text() == search) {
+                 if(show_hidden) {
+                     $(this).parent().parent().show();
+                 }
+            } else {
+                 $(this).parent().parent().hide();
+            }
+        });
+    }
 
     function create_action_link(link, href, marked) {
 
@@ -177,6 +213,16 @@
         //attach custom DOM elements
         $("div#left-sidebar").find('ol.nav-links').eq(1).append('<li><a id="gc_reminders_button" class="pl8 js-gps-track nav-links--link"></a></li>');
 
+        var site_options = null;
+        var options_added = [];
+        $.each(data.posts, function( index, value ) {
+            if(!options_added.includes(value.site)) {
+                options_added.push(value.site);
+                site_options += '<option value="' + value.site + '">Show Only ' + value.site[0].toUpperCase() + value.site.substr(1) + '</option>';
+            }
+        });
+
+
         $("body").append('\
             <div id="gc_modal_wrapper">\
                 <div id="gc_modal_window">\
@@ -188,7 +234,11 @@
                          <div id="gc_remind_popup_data"></div>\
                     </div>\
                     <div id="gc_modal_footer">\
-                        <input type="text" id="gc_modal_search" placeholder="Search Notes..." style="margin-right:5px;"/><button style="margin-bottom: 3px;" id="gc_purge_reminders">Purge Reminders</button>\
+                        <input type="text" id="gc_modal_search" placeholder="Search Notes..." style="margin-right:5px;"/>\
+                        <select id="gc_modal_site" class="s-input" style="margin-right:5px;max-width: 200px;">\
+                            <option value="all">Show All Sites</option>' + site_options + '\
+                        </select>\
+                        <button style="margin-bottom: 3px;" id="gc_purge_reminders">Purge Reminders</button>\
                     </div>\
                 </div>\
             </div>\
