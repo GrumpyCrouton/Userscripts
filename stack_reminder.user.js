@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Stack Reminder
 // @namespace    https://github.com/GrumpyCrouton/Userscripts
-// @version      2.3
+// @version      2.5
 // @description  Allows you to manage reminders about specific posts across Stack Exchange
 // @author       GrumpyCrouton
 // @match        *://*.stackexchange.com/*
@@ -22,6 +22,10 @@
     'use strict';
 
     var $ = window.jQuery;
+
+    var site_image_link = $('[rel="apple-touch-icon image_src"]')[0].href.split('?v=');
+    var site_name = site_image_link[0].split('Sites/')[1].split('/img')[0];
+    var site_tag = site_image_link[1];
 
     var api_key = GM_getValue("gc_api_key", false);
     if(api_key != false) {
@@ -68,7 +72,7 @@
             $(this).parent().append(create_action_link(this.id, this.href, marked));
         });
 
-        $('#gc_reminders_button').text('Reminders (' + posts.length + ')');
+        $('#gc_reminders_button').html('Reminders <span class="s-badge s-badge__mini">' + posts.length + '</span>');
 
         var box = $('#gc_remind_popup_data');
         box.empty();
@@ -96,6 +100,8 @@
             box.html('<center><span style="font-size: 30px;">No posts have been saved yet.</span></center>');
         }
 
+        show_only_site($('#gc_modal_site').val());
+
     }
 
     $(document).on('click', 'a.gc_stack_remind', function() {
@@ -119,10 +125,6 @@
             var title = $('div#question-header > h1 > a.question-hyperlink').text();
             var note = prompt("Type a short note about this post", "");
             if(note == null || note == "") note = "No Note Added";
-
-            var site_image_link = $('[rel="apple-touch-icon image_src"]')[0].href.split('?v=');
-            var site_name = site_image_link[0].split('Sites/')[1].split('/img')[0];
-            var site_tag = site_image_link[1];
 
             post_request(
                 "mark_post",
@@ -159,14 +161,15 @@
     });
 
     $(document).on('keyup', '#gc_modal_search', function() {
-        $(".gc_content_entry").each(function( index ) {
+        $('.gc_content_entry').show();
+        show_only_site($('#gc_modal_site').val(), false);
+        $(".gc_content_entry:visible").each(function( index ) {
             if($(this).text().toLowerCase().match($('#gc_modal_search').val().toLowerCase())) {
                 $(this).show();
             } else {
                 $(this).hide();
             }
         });
-        show_only_site($('#gc_modal_site').val(), false);
     });
 
     $(document).on('change', '#gc_modal_site', function() {
@@ -217,7 +220,10 @@
         $.each(data.posts, function( index, value ) {
             if(!options_added.includes(value.site)) {
                 options_added.push(value.site);
-                site_options += '<option value="' + value.site + '">Show Only ' + value.site[0].toUpperCase() + value.site.substr(1) + '</option>';
+
+                var selected = value.site == site_name ? 'selected' : '';
+
+                site_options += '<option ' + selected + ' value="' + value.site + '">Show Only ' + value.site[0].toUpperCase() + value.site.substr(1) + '</option>';
             }
         });
 
