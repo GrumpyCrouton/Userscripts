@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Stack Reminder
 // @namespace    https://github.com/GrumpyCrouton/Userscripts
-// @version      2.5
+// @version      2.6
 // @description  Allows you to manage reminders about specific posts across Stack Exchange
 // @author       GrumpyCrouton
 // @match        *://*.stackexchange.com/*
@@ -223,7 +223,9 @@
 
                 var selected = value.site == site_name ? 'selected' : '';
 
-                site_options += '<option ' + selected + ' value="' + value.site + '">Show Only ' + value.site[0].toUpperCase() + value.site.substr(1) + '</option>';
+                if(value.site != null) {
+                     site_options += '<option ' + selected + ' value="' + value.site + '">Show Only ' + value.site[0].toUpperCase() + value.site.substr(1) + '</option>';
+                }
             }
         });
 
