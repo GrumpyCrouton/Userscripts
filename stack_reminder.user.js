@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Stack Reminder
 // @namespace    https://github.com/GrumpyCrouton/Userscripts
-// @version      2.6
+// @version      2.8
 // @description  Allows you to manage reminders about specific posts across Stack Exchange
 // @author       GrumpyCrouton
 // @match        *://*.stackexchange.com/*
@@ -84,11 +84,13 @@
                 <div class="grid gc_content_entry">\
                     <div class="grid--cell">' + site_icon + '</div>\
                     <div class="grid--cell fl1">\
-                        <span style="font-size: 14px;"><a style="color: #18529A;" href="' + value.href + '">' + value.title + '</a></span><br>\
-                        <span class="gc_note_span" style="font-size: 12px;color: #6a737c">Note: ' + (value.note == null ? 'No Note Added' : value.note) + '</span>\
-                    </div>\
-                    <div class="grid--cell">\
-                         <a class="gc_stack_remind" data-marked="true" onclick="$(this).parent().css(\'background-color\', \'#ffa9a9\').stop().hide(\'fade\', 2000);" data-link="' + value.link + '" style="float: right;">X</a>\
+                        <span style="font-size: 14px;"><strong>' + value.title + '</strong></span> <br> \
+                        <span class="gc_note_span" style="font-size: 12px;color: #6a737c">' + (value.note == null ? 'No Note Added' : value.note) + '</span><br>\
+                        <span class="gc_note_span" style="font-size: 12px;color: #18529A">\
+                            <a href="' + value.href + '">open</a> |\
+                            <a href="' + value.href + '" class="gc_stack_remind gc_interface_delete" data-marked="true" data-link="' + value.link + '">open & delete</a> |\
+                            <a class="gc_stack_remind gc_interface_delete" data-marked="true" data-link="' + value.link + '">delete</a>\
+                        </span>\
                     </div>\
                 </div>\
             ';
@@ -134,6 +136,10 @@
 
     });
 
+    $(document).on('click', '.gc_interface_delete', function() {
+        $(this).parent().parent().parent().css('background-color', '#ffa9a9');
+    });
+
     $(document).on('click', '#gc_purge_reminders', function() {
         if (confirm('Are you sure you want to purge your reminders?')) {
             post_request(
@@ -161,6 +167,13 @@
     });
 
     $(document).on('keyup', '#gc_modal_search', function() {
+
+        $('.gc_tab_changer').css("background-color", "#7fc1f1");
+        $('#gc_remind_tabs').children().hide();
+
+        $('#gc_tab_changer_reminder_button').css("background-color", "#0095ff");
+        $('#gc_remind_popup_data').show();
+
         $('.gc_content_entry').show();
         show_only_site($('#gc_modal_site').val(), false);
         $(".gc_content_entry:visible").each(function( index ) {
@@ -174,6 +187,16 @@
 
     $(document).on('change', '#gc_modal_site', function() {
         show_only_site($(this).val());
+    });
+
+    $(document).on('click', '.gc_tab_changer', function() {
+        var tab = $(this).data('tab');
+
+        $('.gc_tab_changer').css("background-color", "#7fc1f1");
+        $('#gc_remind_tabs').children().hide();
+
+        $(this).css("background-color", "#0095ff");
+        $('#' + tab).show();
     });
 
     function show_only_site(search, show_hidden = true) {
@@ -202,6 +225,20 @@
 
         var element = "<a class='gc_stack_remind' data-marked='" + marked + "' data-href='" + href + "' data-link='" + link + "' style='color: " + color + ";'>" + (marked ? 'don\'t remind me' : 'remind me') + "</a>";
         return element;
+    }
+
+     $(document).on('click', '#gc_suggestion_button', function() {
+        send_suggestion();
+    });
+
+    function send_suggestion() {
+        var suggestion = prompt('Enter a Suggestion for Stack Reminder');
+        if(suggestion != null && suggestion != "") {
+            post_request(
+                "send_suggestion",
+                "api_key=" + api_key + "&suggestion=" + suggestion,
+            );
+        }
     }
 
     var post_functions = {};
@@ -236,16 +273,27 @@
                     <div id="gc_modal_header">\
                         <div class="popup-close" id="gc_modal_close"><a title="close this popup (or hit Esc)">×</a></div>\
                         <h2>Stack Reminder</h2>\
+                        <div style="border-bottom: 1px solid #b1b1b182">\
+                             <button data-tab="gc_remind_popup_data" id="gc_tab_changer_reminder_button" class="gc_tab_changer">Reminder List</button>\
+                             <button data-tab="gc_remind_settings_tab" class="gc_tab_changer" style="background-color: #7fc1f1;">Settings</button>\
+                         </div>\
                     </div>\
                     <div id="gc_modal_content">\
-                         <div id="gc_remind_popup_data"></div>\
+                         <div id="gc_remind_tabs">\
+                             <div class="gc_tab_content" id="gc_remind_popup_data"></div>\
+                             <div class="gc_tab_content" style="display: none;" id="gc_remind_settings_tab">\
+                                  <aside class="gc_remind_option s-notice s-notice__success"><h2>API Key</h2><input style="width: 100%;" type="text" disabled value="' + api_key + '"/><p class="gc_note">Visit the <a href="http://stack-remind.grumpycrouton.com">Stack Remind Backend</a> to change this.</p></aside>\
+                                  <aside class="gc_remind_option s-notice s-notice__info"><h2>Feature Request</h2><p class="gc_note">Have an idea for Stack Reminder? Use the button below to send it to the developer.</p><button id="gc_suggestion_button">Send a Suggestion</button></aside>\
+                                  <aside class="gc_remind_option s-notice s-notice__warning"><h2>Purge Reminders</h2><button style="margin-bottom: 3px;" id="gc_purge_reminders">Remove <strong>ALL</strong> Entries From Your List</button></aside>\
+                                  <aside class="gc_remind_option s-notice s-notice__success"><h2>Coming Soon</h2><p class="gc_note">Soon, you\'ll be able to manage your reminder list directly through the <a href="http://stack-remind.grumpycrouton.com">Stack Remind Backend</a>, as well as have the ability to view the status of your submitted suggestions. </p></aside>\
+                             </div>\
+                         </div>\
                     </div>\
                     <div id="gc_modal_footer">\
                         <input type="text" id="gc_modal_search" placeholder="Search Notes..." style="margin-right:5px;"/>\
                         <select id="gc_modal_site" class="s-input" style="margin-right:5px;max-width: 200px;">\
                             <option value="all">Show All Sites</option>' + site_options + '\
                         </select>\
-                        <button style="margin-bottom: 3px;" id="gc_purge_reminders">Purge Reminders</button>\
                     </div>\
                 </div>\
             </div>\
@@ -257,6 +305,10 @@
     post_functions.mark_post = function(response) {
         var data = JSON.parse(response.response);
         process_page(data.posts);
+    }
+
+    post_functions.send_suggestion = function(response) {
+        var data = JSON.parse(response.response);
     }
 
     post_functions.unmark_post = function(response) {
@@ -293,21 +345,31 @@
             transform: translate(-50%, -50%);\
         }\
         #gc_modal_header, #gc_modal_footer {\
-            height: 5%;\
+            height: 10%;\
         }\
         #gc_modal_content {\
             overflow: auto;\
-            height:90%;\
+            height:85%;\
             width:100%;\
             margin-bottom:5px;\
-            padding: 10px;\
-            border: 1px solid gray;\
         }\
         .gc_content_entry {\
-            margin: 5px;\
-            padding-bottom: 10px;\
+            padding-bottom: 5px;\
             margin-bottom: 10px;\
-            border-bottom: 1px solid gray;\
+            border-bottom: 1px dashed #a7a4a470;\
+        }\
+        .gc_content_entry:last-child {\
+           border-bottom: 0px;\
+        }\
+        .gc_tab_content {\
+            margin-top: 10px;\
+        }\
+        .gc_remind_option {\
+            margin-bottom: 5px;\
+        }\
+        .gc_note {\
+            margin: 0px;\
+            color: gray;\
         }\
     ");
 
