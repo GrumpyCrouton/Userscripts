@@ -229,7 +229,7 @@
 
         $('.gc_stack_remind').remove();
 
-        $("a.short-link:contains('share')").each(function( index ) {
+        $("a.js-share-link").each(function( index ) {
             var marked = false;
             if(posts.filter(p => p.link == this.id).length > 0) {
                 marked = true;
