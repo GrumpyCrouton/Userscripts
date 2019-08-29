@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Stack Reminder
 // @namespace    https://github.com/GrumpyCrouton/Userscripts
-// @version      3.0
+// @version      3.1
 // @description  Allows you to manage reminders about specific posts across Stack Exchange
 // @author       GrumpyCrouton
 // @match        *://*.stackexchange.com/*
