@@ -25,9 +25,8 @@
     'use strict';
 
     var disable_upvote = true;
-
-    var disable_answering = true;
-    var disable_asking = true;
+    var disable_answering = false;
+    var disable_asking = false;
 
     var elements_to_remove = [
 
