@@ -56,8 +56,6 @@
     if(disable_answering) elements_to_remove.push('form#post-form');
     if(disable_asking) elements_to_remove.push('a[href$=ask]');
 
-    console.log(elements_to_remove);
-
     $.each(elements_to_remove, function(index, value) {
         $(value).remove();
     });
