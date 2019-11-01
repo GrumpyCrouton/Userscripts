@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Anti-Moderation Tools (SE Strike Script)
 // @namespace    https://github.com/GrumpyCrouton/Userscripts
-// @version      0.1
+// @version      0.2
 // @description  Disables moderator abilities on SE sites.
 // @author       GrumpyCrouton
 // @match        *://stackoverflow.com/*
