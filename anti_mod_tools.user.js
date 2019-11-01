@@ -39,6 +39,7 @@
         'a.close-question-link', //close button
         'a.flag-post-link', //flag button
         'a.js-comment-flag', //comment flag button
+        'a.suggest-edit-post', //suggest edit button
 
         //comments
         'div.comment-flagging', // comment flag button
